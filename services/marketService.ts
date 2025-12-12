@@ -1,4 +1,4 @@
-import { AssetType, AssetData } from '../types';
+import { AssetType, AssetData, StatisticsHistory } from '../types';
 
 // ============================================================================
 // CONFIGURAÇÃO DE CHAVES DE API
@@ -137,24 +137,47 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
   try {
     // --- STRATEGY: BRAZILIAN ASSETS (BRAPI) ---
     if ((type === AssetType.BR_STOCK || type === AssetType.FII) && isBrapiEnabled) {
-        const response = await fetch(`https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true`); // fundamental=true gives more data
+        
+        // Tentativa primária: Com histórico estatístico
+        let targetUrl = `https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true&defaultKeyStatisticsHistory=true`;
+        let response = await fetch(targetUrl);
+
+        // Se der 403 (Proibido/Plano insuficiente), tenta sem o histórico
+        if (response.status === 403) {
+           console.warn(`BRAPI: 403 em ${targetUrl}. Tentando fallback sem histórico.`);
+           targetUrl = `https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true`;
+           response = await fetch(targetUrl);
+        }
+
         const json = await response.json();
+        
         if (json.results && json.results.length > 0) {
             const res = json.results[0];
-            // Try to find dividend yield (sometimes in different fields depending on tier)
-            // Brapi often lacks explicit 'dividendYield' in free tier root, but might be in fundamentals.
-            // For safety, if not found, we will default to 0 or mock logic below.
             
+            // Parse history if available
+            let statisticsHistory: StatisticsHistory[] = [];
+            if (res.defaultKeyStatisticsHistory && Array.isArray(res.defaultKeyStatisticsHistory)) {
+                statisticsHistory = res.defaultKeyStatisticsHistory.map((item: any) => ({
+                    year: new Date(item.updatedAt).getFullYear().toString(),
+                    dividendYield: item.dividendYield || 0
+                }));
+            }
+
             apiData = {
                 ticker: res.symbol,
-                name: res.longName,
+                name: res.longName || res.shortName,
                 currentPrice: res.regularMarketPrice,
                 lastUpdated: new Date(res.regularMarketTime).toLocaleTimeString(),
                 logoUrl: res.logourl,
                 type: type,
-                // Attempt to read DY if available (structure varies)
-                dividendYield: 0 
+                dividendYield: 0, // Será preenchido ou deixado 0 se não encontrar
+                statisticsHistory: statisticsHistory
             };
+            
+            // Tenta pegar o DY mais recente do histórico, se disponível
+            if (statisticsHistory.length > 0) {
+               apiData.dividendYield = statisticsHistory[0].dividendYield;
+            }
         }
     }
 
@@ -210,7 +233,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
   if (apiData && apiData.currentPrice) {
       // If API didn't provide yield but we have a mock for it, lets use the mock yield 
       // just to demonstrate the Bazin feature if the user hasn't set up paid API keys yet.
-      if (!apiData.dividendYield && mockAsset) {
+      if ((!apiData.dividendYield || apiData.dividendYield === 0) && mockAsset) {
          apiData.dividendYield = mockAsset.dividendYield;
       }
       return apiData as AssetData;

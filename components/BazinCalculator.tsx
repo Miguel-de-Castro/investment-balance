@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AssetData } from '../types';
-import { ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Percent, Info } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Percent, Info, Clock } from 'lucide-react';
 
 interface Props {
   asset: AssetData;
@@ -14,6 +14,8 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
   
   const [customDividend, setCustomDividend] = useState<string>(''); // User override for R$
   const [customYieldInput, setCustomYieldInput] = useState<string>(''); // User override for %
+  
+  const [selectedAvgYear, setSelectedAvgYear] = useState<number | null>(null);
 
   // 1. Determine the Dividend Value (Numerator)
   let actualAnnualDividend = 0;
@@ -46,7 +48,30 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
      // Reset inputs if asset changes
      setCustomDividend('');
      setCustomYieldInput('');
+     setSelectedAvgYear(null);
   }, [asset.ticker]);
+
+  // Handle Historical Average Click
+  const handleHistoryClick = (years: number) => {
+    if (!asset.statisticsHistory) return;
+
+    // Filter valid objects (sometimes API might return nulls)
+    const validHistory = asset.statisticsHistory.filter(h => h.dividendYield != null);
+    
+    // Slice based on requested years
+    const slice = validHistory.slice(0, years);
+    
+    if (slice.length === 0) return;
+
+    // Calculate Average
+    const sum = slice.reduce((acc, curr) => acc + curr.dividendYield, 0);
+    const avg = sum / slice.length;
+
+    // Set State
+    setInputMode('percent');
+    setCustomYieldInput(avg.toFixed(2));
+    setSelectedAvgYear(years);
+  };
 
   // If crypto or asset without yield logic
   if (asset.type === 'Criptomoeda') {
@@ -58,6 +83,9 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
           </div>
       )
   }
+
+  // Check history availability for UI rendering
+  const historyCount = asset.statisticsHistory?.length || 0;
 
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
@@ -95,9 +123,46 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
           {/* Inputs */}
           <div className="space-y-4">
              <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5 transition-colors">
-                 <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                     <TrendingUp size={18} /> Parâmetros
-                 </h3>
+                 
+                 <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <TrendingUp size={18} /> Parâmetros
+                    </h3>
+
+                    {/* Historical Average Buttons */}
+                    {historyCount > 0 && (
+                        <div className="flex items-center gap-1">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 mr-1 flex items-center gap-1">
+                                <Clock size={10} /> Médias:
+                            </span>
+                            
+                            {historyCount >= 1 && (
+                                <button
+                                    onClick={() => handleHistoryClick(1)}
+                                    className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${selectedAvgYear === 1 ? 'bg-brand-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                >
+                                    1A
+                                </button>
+                            )}
+                             {historyCount >= 5 && (
+                                <button
+                                    onClick={() => handleHistoryClick(5)}
+                                    className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${selectedAvgYear === 5 ? 'bg-brand-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                >
+                                    5A
+                                </button>
+                            )}
+                             {historyCount >= 10 && (
+                                <button
+                                    onClick={() => handleHistoryClick(10)}
+                                    className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${selectedAvgYear === 10 ? 'bg-brand-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                                >
+                                    10A
+                                </button>
+                            )}
+                        </div>
+                    )}
+                 </div>
                  
                  {/* Target Yield Input */}
                  <div>
@@ -120,12 +185,15 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
                  <div>
                      <div className="flex justify-between items-center mb-2">
                         <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
-                            Base de Cálculo
+                            Base de Cálculo {selectedAvgYear ? `(Média ${selectedAvgYear} Anos)` : ''}
                         </label>
                         {/* Toggle Switch */}
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg">
                             <button 
-                                onClick={() => setInputMode('value')}
+                                onClick={() => {
+                                    setInputMode('value');
+                                    setSelectedAvgYear(null);
+                                }}
                                 className={`px-2 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1 ${inputMode === 'value' ? 'bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <DollarSign size={12} /> R$
@@ -147,7 +215,10 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
                                 step="0.01"
                                 placeholder={asset.dividendYield ? (asset.currentPrice * (asset.dividendYield/100)).toFixed(2) : "0.00"}
                                 value={customDividend}
-                                onChange={(e) => setCustomDividend(e.target.value)}
+                                onChange={(e) => {
+                                    setCustomDividend(e.target.value);
+                                    setSelectedAvgYear(null);
+                                }}
                                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 pl-8 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
                             />
                             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
@@ -161,12 +232,17 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
                                 step="0.1"
                                 placeholder={asset.dividendYield ? asset.dividendYield.toString() : "0.0"}
                                 value={customYieldInput}
-                                onChange={(e) => setCustomYieldInput(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 pr-8 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none transition-colors"
+                                onChange={(e) => {
+                                    setCustomYieldInput(e.target.value);
+                                    setSelectedAvgYear(null);
+                                }}
+                                className={`w-full bg-slate-50 dark:bg-slate-800 border rounded-lg p-2 pr-8 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none transition-colors ${selectedAvgYear ? 'border-brand-500 ring-1 ring-brand-500' : 'border-slate-200 dark:border-slate-700'}`}
                             />
                             <span className="absolute right-3 top-2.5 text-slate-400 dark:text-slate-500 text-sm">%</span>
                             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-                                Dividend Yield atual do ativo.
+                                {selectedAvgYear 
+                                    ? `Média calculada com base nos últimos ${selectedAvgYear} registros.` 
+                                    : 'Dividend Yield atual do ativo.'}
                             </p>
                         </div>
                      )}

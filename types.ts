@@ -6,6 +6,11 @@ export enum AssetType {
   UNKNOWN = 'Desconhecido'
 }
 
+export interface StatisticsHistory {
+  year: string;
+  dividendYield: number;
+}
+
 export interface AssetData {
   ticker: string;
   type: AssetType;
@@ -14,6 +19,7 @@ export interface AssetData {
   name?: string;
   logoUrl?: string;
   dividendYield?: number; // Porcentagem (ex: 5.5 para 5.5%)
+  statisticsHistory?: StatisticsHistory[];
 }
 
 export interface SimulationState {
