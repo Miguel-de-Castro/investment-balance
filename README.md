@@ -1,6 +1,6 @@
-# InvestCalc+ 📈
+# Investment Balance 📈
 
-InvestCalc+ é um simulador moderno e intuitivo para investidores. Ele permite calcular o novo **Preço Médio** após aportes e verificar o **Preço Teto** (Método Bazin) para ativos geradores de renda.
+**Investment Balance** é um simulador moderno e intuitivo para investidores. Ele permite calcular o novo **Preço Médio** após aportes e verificar o **Preço Teto** (Método Bazin) para ativos geradores de renda.
 
 O aplicativo suporta Ações Brasileiras, Fundos Imobiliários (FIIs), Criptomoedas e Ações Americanas (Stocks).
 

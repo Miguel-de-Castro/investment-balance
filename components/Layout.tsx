@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <TrendingUp size={20} strokeWidth={2.5} />
             </div>
             <span className="font-bold text-xl tracking-tight text-slate-800">
-              Invest<span className="text-brand-600">Calc+</span>
+              Investment <span className="text-brand-600">Balance</span>
             </span>
           </Link>
           
@@ -44,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Footer */}
       <footer className="py-6 text-center text-slate-400 text-sm border-t border-slate-200 mt-auto">
-        <p>&copy; {new Date().getFullYear()} InvestCalc+. Dados simulados para demonstração.</p>
+        <p>&copy; {new Date().getFullYear()} Investment Balance. Dados simulados para demonstração.</p>
       </footer>
     </div>
   );
