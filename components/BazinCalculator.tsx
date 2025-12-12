@@ -90,6 +90,15 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
   return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
       
+      {/* Disclaimer Alert */}
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 p-4 rounded-xl flex gap-3 text-amber-800 dark:text-amber-200 shadow-sm">
+        <AlertTriangle className="shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" size={20} />
+        <p className="text-sm font-medium leading-relaxed">
+          Atenção: Este simulador <strong>não constitui recomendação de compra ou venda</strong>. 
+          O resultado reflete apenas a aplicação matemática do Método Bazin, focado exclusivamente no histórico de dividendos, sem considerar outros fundamentos ou o momento da empresa.
+        </p>
+      </div>
+
       {/* Explanation & Formula Box */}
       <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 p-5 rounded-xl text-blue-900 dark:text-blue-200 shadow-sm">
         <div className="flex items-start gap-3">
