@@ -12,10 +12,10 @@ interface Props {
 // ----------------------------------------------------------------------
 export const ResultSummary: React.FC<Props> = ({ result, asset }) => {
   if (!result) {
-      // Placeholder state to maintain layout height/balance before data is ready
+      // Placeholder state
       return (
-        <div className="bg-slate-900 rounded-2xl p-8 h-full shadow-sm flex flex-col justify-center items-center text-center opacity-50 ring-1 ring-slate-800">
-            <div className="text-slate-600 font-medium animate-pulse">
+        <div className="bg-slate-900 dark:bg-slate-950 rounded-2xl p-8 h-full shadow-sm flex flex-col justify-center items-center text-center opacity-50 ring-1 ring-slate-800 dark:ring-slate-800">
+            <div className="text-slate-600 dark:text-slate-500 font-medium animate-pulse">
                 Preencha os dados da simulação para ver o resultado.
             </div>
         </div>
@@ -32,7 +32,7 @@ export const ResultSummary: React.FC<Props> = ({ result, asset }) => {
   const formatMoney = (val: number) => `${currency} ${val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="bg-slate-900 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden h-full flex flex-col justify-center ring-1 ring-slate-900/5 animate-in slide-in-from-right-4 duration-500">
+    <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden h-full flex flex-col justify-center ring-1 ring-slate-900/5 dark:ring-slate-800 animate-in slide-in-from-right-4 duration-500 transition-colors">
         {/* Abstract Background Decoration */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand-500 rounded-full blur-[80px] opacity-20 pointer-events-none"></div>
         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500 rounded-full blur-[80px] opacity-10 pointer-events-none"></div>
@@ -50,7 +50,7 @@ export const ResultSummary: React.FC<Props> = ({ result, asset }) => {
             {formatMoney(result.newAvgPrice)}
           </div>
           
-          <p className="text-slate-400 text-sm font-medium border-t border-slate-800 pt-4">
+          <p className="text-slate-400 text-sm font-medium border-t border-slate-800 dark:border-slate-800 pt-4">
             {isImprovement 
               ? "Excelente! Você conseguiu baixar seu preço médio." 
               : "Atenção: Seu preço médio subiu com este aporte."}
@@ -73,43 +73,43 @@ export const ResultGrid: React.FC<Props> = ({ result, asset }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-4 duration-500 delay-150 fade-in">
         
         {/* Card A: Valor do Aporte (Green Highlight) */}
-        <div className="bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity text-emerald-600">
+        <div className="bg-emerald-50/50 dark:bg-emerald-900/20 p-5 rounded-2xl border border-emerald-100/80 dark:border-emerald-800/50 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity text-emerald-600 dark:text-emerald-400">
              <PlusCircle size={48} />
           </div>
           
           <div className="relative z-10 flex flex-col h-full justify-between gap-3">
              <div>
-                <span className="flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wide mb-1">
+                <span className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1">
                    <PlusCircle size={14} /> Valor do Aporte
                 </span>
-                <div className="text-2xl font-bold text-slate-800">
+                <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                    {formatMoney(result.totalInvestedNew)}
                 </div>
              </div>
-             <div className="text-xs text-emerald-700/70 font-medium bg-emerald-100/50 px-2 py-1 rounded w-fit">
+             <div className="text-xs text-emerald-700/70 dark:text-emerald-400/70 font-medium bg-emerald-100/50 dark:bg-emerald-900/50 px-2 py-1 rounded w-fit">
                 Dinheiro saindo do bolso hoje
              </div>
           </div>
         </div>
 
         {/* Card B: Valor de Mercado (Profit/Loss) */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500 dark:text-slate-400">
              <PieChart size={48} />
           </div>
 
           <div className="relative z-10 flex flex-col h-full justify-between gap-3">
             <div>
-               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
                   <PieChart size={14} /> Valor de Mercado
                </span>
-               <div className="text-2xl font-bold text-slate-800">
+               <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                   {formatMoney(result.currentMarketValue)}
                </div>
             </div>
             
-            <div className={`text-xs font-bold flex items-center gap-1 ${result.potentialProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <div className={`text-xs font-bold flex items-center gap-1 ${result.potentialProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                 {result.potentialProfit >= 0 ? 'Lucro Potencial:' : 'Prejuízo Potencial:'} 
                 <span>{result.potentialProfit >= 0 ? '+' : ''}{formatMoney(result.potentialProfit)}</span>
             </div>
@@ -117,42 +117,42 @@ export const ResultGrid: React.FC<Props> = ({ result, asset }) => {
         </div>
 
         {/* Card C: Total Investido */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500 dark:text-slate-400">
              <Wallet size={48} />
           </div>
           
           <div className="relative z-10 flex flex-col h-full justify-between gap-3">
             <div>
-               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
                   <Wallet size={14} /> Total Investido
                </span>
-               <div className="text-2xl font-bold text-slate-800">
+               <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
                   {formatMoney(result.totalInvestedTotal)}
                </div>
             </div>
-             <div className="text-xs text-slate-400 font-medium">
+             <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                 Soma de todos os aportes realizados
              </div>
           </div>
         </div>
 
         {/* Card D: Nova Quantidade */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity text-slate-500 dark:text-slate-400">
              <Coins size={48} />
           </div>
 
           <div className="relative z-10 flex flex-col h-full justify-between gap-3">
             <div>
-               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">
+               <span className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
                   <TrendingUp size={14} /> Nova Quantidade
                </span>
-               <div className="text-2xl font-bold text-slate-800">
-                  {result.totalQty} <span className="text-lg font-medium text-slate-400">und.</span>
+               <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+                  {result.totalQty} <span className="text-lg font-medium text-slate-400 dark:text-slate-500">und.</span>
                </div>
             </div>
-            <div className="text-xs text-slate-400 font-medium">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                Saldo final de ações/cotas
             </div>
           </div>
