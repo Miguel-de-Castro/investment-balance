@@ -101,7 +101,11 @@ export const searchAssets = async (query: string): Promise<AssetData[]> => {
   // Se tiver Token BRAPI configurado
   if (isBrapiEnabled && q.length >= 3) {
       try {
-          const response = await fetch(`https://brapi.dev/api/quote/list?search=${q}&limit=5&token=${BRAPI_TOKEN}`);
+          const response = await fetch(`https://brapi.dev/api/quote/list?search=${q}&limit=5`, {
+            headers: {
+              'Authorization': `Bearer ${BRAPI_TOKEN}`
+            }
+          });
           const data = await response.json();
           if (data.stocks) {
               return data.stocks.map((s: any) => ({
@@ -139,14 +143,22 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
     if ((type === AssetType.BR_STOCK || type === AssetType.FII) && isBrapiEnabled) {
         
         // Tentativa primária: Com histórico estatístico
-        let targetUrl = `https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true&defaultKeyStatisticsHistory=true`;
-        let response = await fetch(targetUrl);
+        let targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true&defaultKeyStatisticsHistory=true`;
+        let response = await fetch(targetUrl, {
+            headers: {
+                'Authorization': `Bearer ${BRAPI_TOKEN}`
+            }
+        });
 
         // Se der 403 (Proibido/Plano insuficiente), tenta sem o histórico
         if (response.status === 403) {
            console.warn(`BRAPI: 403 em ${targetUrl}. Tentando fallback sem histórico.`);
-           targetUrl = `https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true`;
-           response = await fetch(targetUrl);
+           targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true`;
+           response = await fetch(targetUrl, {
+               headers: {
+                   'Authorization': `Bearer ${BRAPI_TOKEN}`
+               }
+           });
         }
 
         const json = await response.json();
