@@ -143,7 +143,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
     if ((type === AssetType.BR_STOCK || type === AssetType.FII) && isBrapiEnabled) {
         
         // Tentativa primária: Com histórico estatístico
-        let targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true&defaultKeyStatisticsHistory=true`;
+        let targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true&modules=defaultKeyStatisticsHistory`;
         let response = await fetch(targetUrl, {
             headers: {
                 'Authorization': `Bearer ${BRAPI_TOKEN}`
