@@ -12,7 +12,8 @@
     "lucide-react": "^0.560.0",
     "react-router-dom": "^7.10.1",
     "react-dom": "^19.2.3",
-    "react": "^19.2.3"
+    "react": "^19.2.3",
+    "@vercel/node": "^5.5.15"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

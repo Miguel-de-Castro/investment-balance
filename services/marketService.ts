@@ -4,9 +4,8 @@ import { AssetType, AssetData, StatisticsHistory } from '../types';
 // CONFIGURAÇÃO DE CHAVES DE API
 // ============================================================================
 
-// Função auxiliar para ler variáveis de ambiente (Compatível com Vite e CRA)
+// Função auxiliar para ler variáveis de ambiente
 const getEnvVar = (key: string, fallback: string = ''): string => {
-  // Tenta Vite (import.meta.env)
   try {
     // @ts-ignore
     if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[`VITE_${key}`]) {
@@ -14,8 +13,6 @@ const getEnvVar = (key: string, fallback: string = ''): string => {
       return import.meta.env[`VITE_${key}`];
     }
   } catch (e) {}
-
-  // Tenta Process (Create React App / Node)
   try {
     // @ts-ignore
     if (typeof process !== 'undefined' && process.env && process.env[`REACT_APP_${key}`]) {
@@ -23,16 +20,14 @@ const getEnvVar = (key: string, fallback: string = ''): string => {
       return process.env[`REACT_APP_${key}`];
     }
   } catch (e) {}
-
   return fallback;
 };
 
-// Se a variável de ambiente não existir, usamos o valor placeholder 'YOUR_TOKEN'
-// A lógica do código verifica se é diferente do placeholder para saber se é real.
-const BRAPI_TOKEN = getEnvVar('BRAPI_TOKEN', 'YOUR_BRAPI_TOKEN');
-const ALPHA_VANTAGE_KEY = getEnvVar('ALPHA_VANTAGE_KEY', 'YOUR_ALPHA_KEY');
+// NOTA DE SEGURANÇA:
+// O Token da Brapi foi movido para o Backend (Serverless Function).
+// Não lemos mais o BRAPI_TOKEN aqui para evitar exposição no navegador.
 
-const isBrapiEnabled = BRAPI_TOKEN && BRAPI_TOKEN !== 'YOUR_BRAPI_TOKEN';
+const ALPHA_VANTAGE_KEY = getEnvVar('ALPHA_VANTAGE_KEY', 'YOUR_ALPHA_KEY');
 const isAlphaEnabled = ALPHA_VANTAGE_KEY && ALPHA_VANTAGE_KEY !== 'YOUR_ALPHA_KEY';
 
 // ============================================================================
@@ -49,7 +44,7 @@ const MOCK_DB: AssetData[] = [
   { ticker: 'MXRF11', name: 'Maxi Renda FII', type: AssetType.FII, currentPrice: 10.45, lastUpdated: 'Simulado', dividendYield: 12.3 },
   { ticker: 'HGLG11', name: 'CSHG Logística FII', type: AssetType.FII, currentPrice: 162.50, lastUpdated: 'Simulado', dividendYield: 9.1 },
 
-  // Crypto (Sem yield via Bazin, mas mantemos estrutura)
+  // Crypto
   { ticker: 'BTC', name: 'Bitcoin', type: AssetType.CRYPTO, currentPrice: 64000, lastUpdated: 'Simulado', dividendYield: 0 },
   { ticker: 'ETH', name: 'Ethereum', type: AssetType.CRYPTO, currentPrice: 3400, lastUpdated: 'Simulado', dividendYield: 0 },
   { ticker: 'SOL', name: 'Solana', type: AssetType.CRYPTO, currentPrice: 145, lastUpdated: 'Simulado', dividendYield: 0 },
@@ -98,31 +93,34 @@ export const searchAssets = async (query: string): Promise<AssetData[]> => {
   if (!query) return [];
   const q = query.toUpperCase().trim();
 
-  // Se tiver Token BRAPI configurado
-  if (isBrapiEnabled && q.length >= 3) {
+  // Tenta buscar via nossa API segura (Proxy)
+  // Se falhar (ex: sem token no backend), cai no catch e usa Mock.
+  if (q.length >= 3) {
       try {
-          const response = await fetch(`https://brapi.dev/api/quote/list?search=${q}&limit=5`, {
-            headers: {
-              'Authorization': `Bearer ${BRAPI_TOKEN}`
+          // Chamada para o backend local (Next.js / Vercel Function)
+          const response = await fetch(`/api/brapi?endpoint=quote/list&search=${q}&limit=5`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.stocks) {
+                return data.stocks.map((s: any) => ({
+                    ticker: s.stock,
+                    name: s.name,
+                    type: s.stock.endsWith('11') ? AssetType.FII : AssetType.BR_STOCK,
+                    currentPrice: s.close,
+                    lastUpdated: 'Live API',
+                    logoUrl: s.logo,
+                    dividendYield: 0
+                }));
             }
-          });
-          const data = await response.json();
-          if (data.stocks) {
-              return data.stocks.map((s: any) => ({
-                  ticker: s.stock,
-                  name: s.name,
-                  type: s.stock.endsWith('11') ? AssetType.FII : AssetType.BR_STOCK,
-                  currentPrice: s.close,
-                  lastUpdated: 'Live API',
-                  logoUrl: s.logo,
-                  dividendYield: 0 // List endpoint usually doesn't have yield
-              }));
           }
       } catch (e) {
-          console.warn("Brapi search failed, falling back to mock");
+          // Silently fail to mock
+          console.warn("Search proxy failed, using mock.");
       }
   }
   
+  // Fallback Mock
   await new Promise(resolve => setTimeout(resolve, 150));
   return MOCK_DB.filter(asset => 
     asset.ticker.includes(q) || (asset.name && asset.name.toUpperCase().includes(q))
@@ -139,61 +137,59 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
   let apiData: Partial<AssetData> | null = null;
 
   try {
-    // --- STRATEGY: BRAZILIAN ASSETS (BRAPI) ---
-    if ((type === AssetType.BR_STOCK || type === AssetType.FII) && isBrapiEnabled) {
+    // --- STRATEGY: BRAZILIAN ASSETS (BRAPI PROXY) ---
+    if (type === AssetType.BR_STOCK || type === AssetType.FII) {
         
         // Tentativa primária: Com histórico estatístico
-        let targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true&modules=defaultKeyStatisticsHistory`;
-        let response = await fetch(targetUrl, {
-            headers: {
-                'Authorization': `Bearer ${BRAPI_TOKEN}`
-            }
-        });
+        // Chamamos a NOSSA rota interna /api/brapi
+        let targetUrl = `/api/brapi?endpoint=quote/${t}&fundamental=true&modules=defaultKeyStatisticsHistory`;
+        let response = await fetch(targetUrl);
 
-        // Se der 403 (Proibido/Plano insuficiente), tenta sem o histórico
+        // Se a API retornar 403 (Token válido mas plano free limitado), tenta sem histórico
         if (response.status === 403) {
-           console.warn(`BRAPI: 403 em ${targetUrl}. Tentando fallback sem histórico.`);
-           targetUrl = `https://brapi.dev/api/quote/${t}?fundamental=true`;
-           response = await fetch(targetUrl, {
-               headers: {
-                   'Authorization': `Bearer ${BRAPI_TOKEN}`
-               }
-           });
+           console.warn(`BRAPI Proxy: 403 em ${targetUrl}. Tentando fallback sem histórico.`);
+           targetUrl = `/api/brapi?endpoint=quote/${t}&fundamental=true`;
+           response = await fetch(targetUrl);
         }
 
-        const json = await response.json();
-        
-        if (json.results && json.results.length > 0) {
-            const res = json.results[0];
-            
-            // Parse history if available
-            let statisticsHistory: StatisticsHistory[] = [];
-            if (res.defaultKeyStatisticsHistory && Array.isArray(res.defaultKeyStatisticsHistory)) {
-                statisticsHistory = res.defaultKeyStatisticsHistory.map((item: any) => ({
-                    year: new Date(item.updatedAt).getFullYear().toString(),
-                    dividendYield: item.dividendYield || 0
-                }));
-            }
+        if (response.ok) {
+          const json = await response.json();
+          
+          if (json.results && json.results.length > 0) {
+              const res = json.results[0];
+              
+              // Parse history if available
+              let statisticsHistory: StatisticsHistory[] = [];
+              if (res.defaultKeyStatisticsHistory && Array.isArray(res.defaultKeyStatisticsHistory)) {
+                  statisticsHistory = res.defaultKeyStatisticsHistory.map((item: any) => ({
+                      year: new Date(item.updatedAt).getFullYear().toString(),
+                      dividendYield: item.dividendYield || 0
+                  }));
+              }
 
-            apiData = {
-                ticker: res.symbol,
-                name: res.longName || res.shortName,
-                currentPrice: res.regularMarketPrice,
-                lastUpdated: new Date(res.regularMarketTime).toLocaleTimeString(),
-                logoUrl: res.logourl,
-                type: type,
-                dividendYield: 0, // Será preenchido ou deixado 0 se não encontrar
-                statisticsHistory: statisticsHistory
-            };
-            
-            // Tenta pegar o DY mais recente do histórico, se disponível
-            if (statisticsHistory.length > 0) {
-               apiData.dividendYield = statisticsHistory[0].dividendYield;
-            }
+              apiData = {
+                  ticker: res.symbol,
+                  name: res.longName || res.shortName,
+                  currentPrice: res.regularMarketPrice,
+                  lastUpdated: new Date(res.regularMarketTime).toLocaleTimeString(),
+                  logoUrl: res.logourl,
+                  type: type,
+                  dividendYield: 0,
+                  statisticsHistory: statisticsHistory
+              };
+              
+              if (statisticsHistory.length > 0) {
+                 apiData.dividendYield = statisticsHistory[0].dividendYield;
+              }
+          }
+        } else {
+          console.warn("API Brapi returned status:", response.status);
         }
     }
 
     // --- STRATEGY: US STOCKS (ALPHA VANTAGE) ---
+    // Mantemos client-side pois a chave Alpha Vantage geralmente é pública/gratuita, 
+    // mas idealmente também deveria ir para o proxy se fosse paga.
     else if (type === AssetType.US_STOCK && isAlphaEnabled) {
         const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${t}&apikey=${ALPHA_VANTAGE_KEY}`);
         const json = await response.json();
@@ -206,12 +202,12 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
                 lastUpdated: 'Agora (AlphaVantage)',
                 type: AssetType.US_STOCK,
                 logoUrl: 'https://picsum.photos/40/40',
-                dividendYield: 0 // Alpha Vantage free tier global quote doesn't have DY
+                dividendYield: 0
              };
         }
     }
 
-    // --- STRATEGY: CRYPTO (CoinGecko is Free/Public mostly) ---
+    // --- STRATEGY: CRYPTO (CoinGecko) ---
     else if (type === AssetType.CRYPTO) {
         const idMap: Record<string, string> = { 
             'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 
@@ -243,8 +239,6 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
   const mockAsset = MOCK_DB.find(a => a.ticker === t);
   
   if (apiData && apiData.currentPrice) {
-      // If API didn't provide yield but we have a mock for it, lets use the mock yield 
-      // just to demonstrate the Bazin feature if the user hasn't set up paid API keys yet.
       if ((!apiData.dividendYield || apiData.dividendYield === 0) && mockAsset) {
          apiData.dividendYield = mockAsset.dividendYield;
       }
@@ -265,7 +259,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
       }
   }
 
-  // Generative
+  // Generative Fallback
   let price = 100;
   if (type === AssetType.BR_STOCK) price = Math.random() * 50 + 10;
   return {
