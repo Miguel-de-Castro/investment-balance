@@ -1,6 +1,6 @@
 import { AssetData } from '../types';
 
-const HISTORY_KEY = 'investcalc_history_v1';
+const HISTORY_KEY = 'investment_balance_history_v1';
 
 export const getSearchHistory = (): AssetData[] => {
   try {
