@@ -3,8 +3,37 @@ import { AssetType, AssetData } from '../types';
 // ============================================================================
 // CONFIGURAÇÃO DE CHAVES DE API
 // ============================================================================
-const BRAPI_TOKEN = 'YOUR_BRAPI_TOKEN'; // Cadastre-se em https://brapi.dev
-const ALPHA_VANTAGE_KEY = 'YOUR_ALPHA_KEY'; // Cadastre-se em https://www.alphavantage.co
+
+// Função auxiliar para ler variáveis de ambiente (Compatível com Vite e CRA)
+const getEnvVar = (key: string, fallback: string = ''): string => {
+  // Tenta Vite (import.meta.env)
+  try {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[`VITE_${key}`]) {
+      // @ts-ignore
+      return import.meta.env[`VITE_${key}`];
+    }
+  } catch (e) {}
+
+  // Tenta Process (Create React App / Node)
+  try {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env && process.env[`REACT_APP_${key}`]) {
+      // @ts-ignore
+      return process.env[`REACT_APP_${key}`];
+    }
+  } catch (e) {}
+
+  return fallback;
+};
+
+// Se a variável de ambiente não existir, usamos o valor placeholder 'YOUR_TOKEN'
+// A lógica do código verifica se é diferente do placeholder para saber se é real.
+const BRAPI_TOKEN = getEnvVar('BRAPI_TOKEN', 'YOUR_BRAPI_TOKEN');
+const ALPHA_VANTAGE_KEY = getEnvVar('ALPHA_VANTAGE_KEY', 'YOUR_ALPHA_KEY');
+
+const isBrapiEnabled = BRAPI_TOKEN && BRAPI_TOKEN !== 'YOUR_BRAPI_TOKEN';
+const isAlphaEnabled = ALPHA_VANTAGE_KEY && ALPHA_VANTAGE_KEY !== 'YOUR_ALPHA_KEY';
 
 // ============================================================================
 // DADOS MOCK (FALLBACK)
@@ -69,7 +98,8 @@ export const searchAssets = async (query: string): Promise<AssetData[]> => {
   if (!query) return [];
   const q = query.toUpperCase().trim();
 
-  if (BRAPI_TOKEN !== 'YOUR_BRAPI_TOKEN' && q.length >= 3) {
+  // Se tiver Token BRAPI configurado
+  if (isBrapiEnabled && q.length >= 3) {
       try {
           const response = await fetch(`https://brapi.dev/api/quote/list?search=${q}&limit=5&token=${BRAPI_TOKEN}`);
           const data = await response.json();
@@ -106,7 +136,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
 
   try {
     // --- STRATEGY: BRAZILIAN ASSETS (BRAPI) ---
-    if ((type === AssetType.BR_STOCK || type === AssetType.FII) && BRAPI_TOKEN !== 'YOUR_BRAPI_TOKEN') {
+    if ((type === AssetType.BR_STOCK || type === AssetType.FII) && isBrapiEnabled) {
         const response = await fetch(`https://brapi.dev/api/quote/${t}?token=${BRAPI_TOKEN}&fundamental=true`); // fundamental=true gives more data
         const json = await response.json();
         if (json.results && json.results.length > 0) {
@@ -114,8 +144,6 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
             // Try to find dividend yield (sometimes in different fields depending on tier)
             // Brapi often lacks explicit 'dividendYield' in free tier root, but might be in fundamentals.
             // For safety, if not found, we will default to 0 or mock logic below.
-            // Some responses have `dividends` array, we could sum it, but keeping it simple:
-            // Assuming free tier might not return it reliably, we check multiple spots or fallback.
             
             apiData = {
                 ticker: res.symbol,
@@ -131,7 +159,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
     }
 
     // --- STRATEGY: US STOCKS (ALPHA VANTAGE) ---
-    else if (type === AssetType.US_STOCK && ALPHA_VANTAGE_KEY !== 'YOUR_ALPHA_KEY') {
+    else if (type === AssetType.US_STOCK && isAlphaEnabled) {
         const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${t}&apikey=${ALPHA_VANTAGE_KEY}`);
         const json = await response.json();
         const quote = json['Global Quote'];
@@ -148,7 +176,7 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
         }
     }
 
-    // --- STRATEGY: CRYPTO ---
+    // --- STRATEGY: CRYPTO (CoinGecko is Free/Public mostly) ---
     else if (type === AssetType.CRYPTO) {
         const idMap: Record<string, string> = { 
             'BTC': 'bitcoin', 'ETH': 'ethereum', 'SOL': 'solana', 
