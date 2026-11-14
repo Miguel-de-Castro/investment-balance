@@ -98,7 +98,7 @@ export const searchAssets = async (query: string): Promise<AssetData[]> => {
   if (q.length >= 3) {
       try {
           // Chamada para o backend local (Next.js / Vercel Function)
-          const response = await fetch(`/api/brapi?endpoint=quote/list&search=${q}&limit=5`);
+          const response = await fetch(`/api/brapi?endpoint=quote/list&search=${encodeURIComponent(q)}&limit=5`);
           
           if (response.ok) {
             const data = await response.json();
