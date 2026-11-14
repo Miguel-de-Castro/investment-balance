@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AssetData, AssetType, SimulationState, CalculationResult } from '../types';
-import { fetchAssetPrice } from '../services/marketService';
+import { fetchAssetPrice, AssetNotFoundError } from '../services/marketService';
 import { addToHistory } from '../services/storage';
 import SimulationForm from '../components/SimulationForm';
 import { ResultSummary, ResultGrid } from '../components/ResultsView';
 import BazinCalculator from '../components/BazinCalculator';
-import { ArrowLeft, Loader2, RefreshCw, Calculator, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw, Calculator, TrendingUp, FlaskConical } from 'lucide-react';
 
 const Simulator: React.FC = () => {
   const { ticker } = useParams<{ ticker: string }>();
@@ -34,7 +34,10 @@ const Simulator: React.FC = () => {
       setAsset(data);
       addToHistory(data);
     } catch (err) {
-      setError('Não foi possível carregar os dados do ativo. Tente novamente.');
+      setAsset(null);
+      setError(err instanceof AssetNotFoundError
+        ? err.message
+        : 'Não foi possível carregar os dados do ativo. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -121,6 +124,19 @@ const Simulator: React.FC = () => {
           <RefreshCw size={20} />
         </button>
       </div>
+
+      {asset.isSimulated && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200 dark:border-amber-800/30 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm">
+          <FlaskConical size={18} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+          <p>
+            <strong>Dados de demonstração.</strong>{' '}
+            {asset.type === AssetType.US_STOCK
+              ? 'Ações dos EUA ainda não têm fonte de cotação real neste app'
+              : 'Não foi possível obter a cotação real deste ativo agora'}
+            , então os valores abaixo são fictícios e servem apenas para testar o simulador.
+          </p>
+        </div>
+      )}
 
       {/* Asset Info Card */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">

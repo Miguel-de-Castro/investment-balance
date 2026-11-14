@@ -17,7 +17,8 @@ export interface AssetData {
   currentPrice: number;
   lastUpdated: string;
   name?: string;
-  logoUrl?: string;
+  /** true quando o dado é de demonstração (fonte real indisponível) */
+  isSimulated?: boolean;
   dividendYield?: number; // Porcentagem (ex: 5.5 para 5.5%)
   statisticsHistory?: StatisticsHistory[];
 }

@@ -13,6 +13,31 @@ const Home: React.FC = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  // Autocomplete com debounce: só busca 300 ms depois que o usuário para de digitar,
+  // e cancela a requisição anterior para evitar respostas fora de ordem.
+  useEffect(() => {
+    const query = ticker.trim();
+    if (!query) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      const results = await searchAssets(query, controller.signal);
+      if (!controller.signal.aborted) {
+        setSuggestions(results);
+        setShowSuggestions(true);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [ticker]);
+
   useEffect(() => {
     setHistory(getSearchHistory());
 
@@ -26,18 +51,8 @@ const Home: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setTicker(value);
-
-    if (value.trim().length > 0) {
-      const results = await searchAssets(value);
-      setSuggestions(results);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTicker(e.target.value);
   };
 
   const handleSelectSuggestion = (assetTicker: string) => {
@@ -169,7 +184,7 @@ const Home: React.FC = () => {
             <div className="mx-auto w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-2">
               <span className="font-bold">US</span>
             </div>
-            <h3 className="font-semibold text-slate-800 dark:text-slate-300 text-sm">Mercado EUA</h3>
+            <h3 className="font-semibold text-slate-800 dark:text-slate-300 text-sm">Mercado EUA <span className="font-normal text-slate-400 dark:text-slate-500">(demo)</span></h3>
         </div>
       </div>
     </div>
