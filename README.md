@@ -7,9 +7,19 @@ O aplicativo suporta Ações Brasileiras, Fundos Imobiliários (FIIs), Criptomoe
 🔗 **Acesse:** [investment-balance.vercel.app](https://investment-balance.vercel.app/)
 
 <p align="center">
-  <img src="docs/home.png" alt="Tela inicial do Investment Balance" width="49%" />
-  <img src="docs/simulator.png" alt="Simulador de preço médio para PETR4" width="49%" />
+  <img src="docs/home.png" alt="Tela inicial do Investment Balance" width="100%" />
 </p>
+
+<table>
+  <tr>
+    <td width="50%" align="center"><img src="docs/simulator.png" alt="Simulação de aporte e novo preço médio para PETR4" /></td>
+    <td width="50%" align="center"><img src="docs/bazin.png" alt="Preço teto pelo Método Bazin com média de 5 anos de DY" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Simulador de Preço Médio</b></sub></td>
+    <td align="center"><sub><b>Preço Teto (Método Bazin)</b></sub></td>
+  </tr>
+</table>
 
 ---
 
