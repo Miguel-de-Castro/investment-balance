@@ -49,19 +49,50 @@ Abaixo estão as principais tecnologias e bibliotecas utilizadas na construção
     *   Histórico local dos últimos ativos consultados.
     *   Busca inteligente com autocomplete.
 
+## 🏗️ Arquitetura das APIs
+
+| Fonte | Ativos | Onde roda |
+|---|---|---|
+| **BRAPI** | Ações BR e FIIs | Servidor: função serverless `api/brapi.ts` (Vercel) |
+| **CoinGecko** | Criptomoedas | Navegador (API pública, sem chave) |
+| **Alpha Vantage** | Ações EUA | Navegador (chave opcional) |
+
+O token da BRAPI **nunca vai para o navegador**: o frontend chama `/api/brapi`, e a função serverless repassa a chamada para a BRAPI com o token lido de `process.env.BRAPI_TOKEN`. Esse proxy:
+
+- **Só aceita o que o app usa:** `quote/list` (busca com `search` e `limit` ≤ 5) e `quote/{TICKER}` (ticker brasileiro válido, com `fundamental` / `modules=defaultKeyStatisticsHistory`). Qualquer outra requisição recebe `400`.
+- **Faz cache na CDN da Vercel:** cotações por 5 min e buscas por 1 h. Consultas repetidas não consomem a cota da BRAPI.
+
+Se alguma API falhar ou não estiver configurada, o app usa **dados simulados (Mock)**.
+
 ## ⚙️ Configuração (Variáveis de Ambiente)
 
-Para utilizar dados reais das APIs pagas (opcional), renomeie o arquivo `.env.example` para `.env` e adicione suas chaves:
+Todas as chaves são opcionais. Sem elas, o app roda com dados simulados.
 
-```env
-# API para Ações Brasileiras e FIIs (https://brapi.dev)
-VITE_BRAPI_TOKEN=seu_token_aqui
+| Variável | Onde configurar | Descrição |
+|---|---|---|
+| `BRAPI_TOKEN` | Vercel → *Settings → Environment Variables* (só no servidor) | Token da [BRAPI](https://brapi.dev). **Não** use o prefixo `VITE_`, senão ele vai parar no bundle público. |
+| `VITE_ALPHA_VANTAGE_KEY` | `.env.local` ou Vercel | Chave da [Alpha Vantage](https://www.alphavantage.co). Fica **exposta no navegador**, então use apenas uma chave gratuita. |
 
-# API para Ações Americanas (https://www.alphavantage.co)
-VITE_ALPHA_VANTAGE_KEY=sua_key_aqui
+### Rodando localmente
+
+```bash
+npm install
+npm run dev        # frontend apenas (BRAPI cai no Mock)
 ```
 
-> **Nota:** Se as chaves não forem fornecidas, o app utilizará dados simulados (Mock) para demonstração.
+Para testar o proxy da BRAPI localmente, use a [Vercel CLI](https://vercel.com/docs/cli), que executa as funções da pasta `api/`:
+
+```bash
+npm i -g vercel
+vercel env pull .env.local   # ou crie .env.local com BRAPI_TOKEN=seu_token
+vercel dev
+```
+
+> Arquivos `.env*.local` já estão no `.gitignore`. Nunca commite tokens.
+
+## 📄 Licença
+
+Distribuído sob a licença [MIT](LICENSE).
 
 ---
 
