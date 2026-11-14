@@ -79,6 +79,10 @@ O token da BRAPI **nunca vai para o navegador**: o frontend chama `/api/brapi`, 
 - **Só aceita o que o app usa:** `quote/list` (busca com `search` e `limit` ≤ 5) e `quote/{TICKER}` (ticker brasileiro válido, com `fundamental` / `modules=defaultKeyStatisticsHistory`). Qualquer outra requisição recebe `400`.
 - **Faz cache na CDN da Vercel:** cotações por 5 min e buscas por 1 h. Consultas repetidas não consomem a cota da BRAPI.
 
+### Headers de segurança
+
+O `vercel.json` aplica a todas as respostas uma **Content-Security-Policy** restrita: só scripts do próprio domínio, conexões apenas com `/api` e com a CoinGecko, e fontes do Google Fonts. Também aplica `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` e `Permissions-Policy`. Ao adicionar uma nova API externa chamada pelo navegador, inclua o domínio em `connect-src`.
+
 ### Dados de demonstração
 
 Se a fonte real não responder (ou o `BRAPI_TOKEN` não estiver configurado), o app usa um pequeno conjunto de **dados de demonstração** e mostra um aviso claro na tela. Para tickers fora desse conjunto, o app informa que o ativo não foi encontrado — ele **nunca inventa preços**.
