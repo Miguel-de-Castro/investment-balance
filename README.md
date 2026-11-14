@@ -4,6 +4,13 @@
 
 O aplicativo suporta Ações Brasileiras, Fundos Imobiliários (FIIs), Criptomoedas e Ações Americanas (Stocks).
 
+🔗 **Acesse:** [investment-balance.vercel.app](https://investment-balance.vercel.app/)
+
+<p align="center">
+  <img src="docs/home.png" alt="Tela inicial do Investment Balance" width="49%" />
+  <img src="docs/simulator.png" alt="Simulador de preço médio para PETR4" width="49%" />
+</p>
+
 ---
 
 ## 🛠️ Stack Tecnológico
