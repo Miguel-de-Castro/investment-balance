@@ -160,11 +160,16 @@ export const fetchAssetPrice = async (ticker: string): Promise<AssetData> => {
               
               // Parse history if available
               let statisticsHistory: StatisticsHistory[] = [];
+              // A Brapi devolve o DY como fração (0.1062 = 10,62%) e o período em `endDate`.
+              // O app trabalha com DY em percentual, então convertemos aqui.
+              // Anos sem DY informado (null) são descartados para não distorcer as médias.
               if (res.defaultKeyStatisticsHistory && Array.isArray(res.defaultKeyStatisticsHistory)) {
-                  statisticsHistory = res.defaultKeyStatisticsHistory.map((item: any) => ({
-                      year: new Date(item.updatedAt).getFullYear().toString(),
-                      dividendYield: item.dividendYield || 0
-                  }));
+                  statisticsHistory = res.defaultKeyStatisticsHistory
+                      .filter((item: any) => typeof item.dividendYield === 'number')
+                      .map((item: any) => ({
+                          year: String(item.endDate ?? '').slice(0, 4),
+                          dividendYield: parseFloat((item.dividendYield * 100).toFixed(2))
+                      }));
               }
 
               apiData = {

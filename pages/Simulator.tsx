@@ -143,7 +143,7 @@ const Simulator: React.FC = () => {
           </p>
           {asset.dividendYield !== undefined && asset.dividendYield > 0 && (
              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1 bg-emerald-50 dark:bg-emerald-900/30 inline-block px-2 py-0.5 rounded-md">
-                 DY {asset.dividendYield}%
+                 DY {asset.dividendYield.toFixed(2)}%
              </p>
           )}
         </div>
