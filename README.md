@@ -2,7 +2,7 @@
 
 **Investment Balance** é um simulador moderno e intuitivo para investidores. Ele permite calcular o novo **Preço Médio** após aportes e verificar o **Preço Teto** (Método Bazin) para ativos geradores de renda.
 
-O aplicativo suporta Ações Brasileiras, Fundos Imobiliários (FIIs), Criptomoedas e Ações Americanas (Stocks).
+O aplicativo traz cotações reais de Ações Brasileiras, Fundos Imobiliários (FIIs) e Criptomoedas. Ações Americanas estão disponíveis apenas como demonstração (AAPL, TSLA, NVDA).
 
 🔗 **Acesse:** [investment-balance.vercel.app](https://investment-balance.vercel.app/)
 
@@ -42,7 +42,6 @@ Abaixo estão as principais tecnologias e bibliotecas utilizadas na construção
 *   🌐 **Fetch API** - Para requisições HTTP nativas.
 *   🇧🇷 **BRAPI** - Dados de Ações e FIIs do Brasil.
 *   🪙 **CoinGecko** - Dados de Criptomoedas em tempo real.
-*   🇺🇸 **Alpha Vantage** - Dados do mercado americano.
 
 ### Gerenciamento de Estado & Armazenamento
 *   💾 **LocalStorage** - Persistência local do histórico de busca.
@@ -60,11 +59,12 @@ Abaixo estão as principais tecnologias e bibliotecas utilizadas na construção
 2.  **Calculadora Décio Bazin (Preço Teto):**
     *   Cálculo baseado no Dividend Yield ou valor pago em proventos.
     *   Definição de margem de segurança.
-    *   Indicador visual de "Compra Segura" ou "Caro".
+    *   Indicador visual de "Abaixo" ou "Acima" do preço teto.
+    *   Médias de DY de 1, 5 e 10 anos a partir do histórico da BRAPI.
 
 3.  **Histórico & Busca:**
     *   Histórico local dos últimos ativos consultados.
-    *   Busca inteligente com autocomplete.
+    *   Busca com autocomplete (com debounce, para economizar chamadas à API).
 
 ## 🏗️ Arquitetura das APIs
 
@@ -72,29 +72,30 @@ Abaixo estão as principais tecnologias e bibliotecas utilizadas na construção
 |---|---|---|
 | **BRAPI** | Ações BR e FIIs | Servidor: função serverless `api/brapi.ts` (Vercel) |
 | **CoinGecko** | Criptomoedas | Navegador (API pública, sem chave) |
-| **Alpha Vantage** | Ações EUA | Navegador (chave opcional) |
+| — | Ações EUA | Apenas dados de demonstração |
 
 O token da BRAPI **nunca vai para o navegador**: o frontend chama `/api/brapi`, e a função serverless repassa a chamada para a BRAPI com o token lido de `process.env.BRAPI_TOKEN`. Esse proxy:
 
 - **Só aceita o que o app usa:** `quote/list` (busca com `search` e `limit` ≤ 5) e `quote/{TICKER}` (ticker brasileiro válido, com `fundamental` / `modules=defaultKeyStatisticsHistory`). Qualquer outra requisição recebe `400`.
 - **Faz cache na CDN da Vercel:** cotações por 5 min e buscas por 1 h. Consultas repetidas não consomem a cota da BRAPI.
 
-Se alguma API falhar ou não estiver configurada, o app usa **dados simulados (Mock)**.
+### Dados de demonstração
+
+Se a fonte real não responder (ou o `BRAPI_TOKEN` não estiver configurado), o app usa um pequeno conjunto de **dados de demonstração** e mostra um aviso claro na tela. Para tickers fora desse conjunto, o app informa que o ativo não foi encontrado — ele **nunca inventa preços**.
 
 ## ⚙️ Configuração (Variáveis de Ambiente)
 
-Todas as chaves são opcionais. Sem elas, o app roda com dados simulados.
+A única variável é opcional: sem ela, ações BR e FIIs usam os dados de demonstração. Veja também o [`.env.example`](.env.example).
 
 | Variável | Onde configurar | Descrição |
 |---|---|---|
 | `BRAPI_TOKEN` | Vercel → *Settings → Environment Variables* (só no servidor) | Token da [BRAPI](https://brapi.dev). **Não** use o prefixo `VITE_`, senão ele vai parar no bundle público. |
-| `VITE_ALPHA_VANTAGE_KEY` | `.env.local` ou Vercel | Chave da [Alpha Vantage](https://www.alphavantage.co). Fica **exposta no navegador**, então use apenas uma chave gratuita. |
 
 ### Rodando localmente
 
 ```bash
 npm install
-npm run dev        # frontend apenas (BRAPI cai no Mock)
+npm run dev        # http://localhost:3000 — frontend apenas (BRAPI usa dados de demonstração)
 ```
 
 Para testar o proxy da BRAPI localmente, use a [Vercel CLI](https://vercel.com/docs/cli), que executa as funções da pasta `api/`:
@@ -114,5 +115,5 @@ Distribuído sob a licença [MIT](LICENSE).
 ---
 
 <div align="center">
-  <sub>Desenvolvido para fins educacionais e de simulação.</sub>
+  <sub>Desenvolvido para fins educacionais e de simulação. Não é recomendação de investimento.</sub>
 </div>

@@ -79,7 +79,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Footer */}
       <footer className="py-6 text-center text-slate-400 dark:text-slate-600 text-sm border-t border-slate-200 dark:border-slate-800 mt-auto">
-        <p>&copy; {new Date().getFullYear()} Investment Balance. Dados simulados para demonstração.</p>
+        <p>&copy; {new Date().getFullYear()} Investment Balance. Ferramenta educacional: não é recomendação de investimento.</p>
+        <p className="mt-1 text-xs">
+          Cotações podem ter atraso ou conter erros. Fontes:{' '}
+          <a href="https://brapi.dev" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-600 dark:hover:text-brand-400">Brapi</a>
+          {' '}e{' '}
+          <a href="https://www.coingecko.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-600 dark:hover:text-brand-400">CoinGecko</a>.
+        </p>
       </footer>
     </div>
   );

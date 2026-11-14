@@ -1,4 +1,15 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// Tipos mínimos do runtime Node da Vercel (req.query e res.status/json são
+// fornecidos pela própria plataforma). Declarados aqui para não depender do
+// pacote @vercel/node só por causa de tipos.
+type VercelRequest = {
+  method?: string;
+  query: Record<string, string | string[] | undefined>;
+};
+type VercelResponse = {
+  setHeader(name: string, value: string): void;
+  status(code: number): VercelResponse;
+  json(body: unknown): VercelResponse;
+};
 
 // ============================================================================
 // Proxy restrito para a Brapi

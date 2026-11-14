@@ -280,7 +280,7 @@ const BazinCalculator: React.FC<Props> = ({ asset }) => {
                       <div className="text-right">
                           <div className="flex items-center justify-end gap-1 font-bold text-white mb-1">
                               {isSafe ? <ShieldCheck size={18} /> : <AlertTriangle size={18} />}
-                              {isSafe ? 'Compra Segura' : 'Preço Caro'}
+                              {isSafe ? 'Abaixo do preço teto' : 'Acima do preço teto'}
                           </div>
                           <div className="text-xs text-white/80">
                               Margem: {safetyMargin > 0 ? '+' : ''}{safetyMargin.toFixed(2)}%
