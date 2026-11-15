@@ -7,8 +7,8 @@
 //   BASIC_AUTH_USER       usuário
 //   BASIC_AUTH_PASSWORD   senha
 //
-// Quando ativa, roda antes de qualquer resposta: HTML, JS/CSS e também as
-// funções em /api (ninguém consome a cota da Brapi sem a senha).
+// Quando ativa, protege o app (/app/*, incluindo JS/CSS) e as funções em /api
+// (ninguém consome a cota da Brapi sem a senha). A landing page em / fica pública.
 // Para desligar, basta remover as variáveis e fazer um novo deploy.
 //
 // Para reutilizar em outro projeto na Vercel: copie este arquivo para a raiz.
@@ -16,8 +16,8 @@
 // ============================================================================
 
 export const config = {
-  // Todas as rotas
-  matcher: '/:path*',
+  // Protege só o app e a API. A landing page na raiz (/) continua pública.
+  matcher: ['/app', '/app/:path*', '/api/:path*'],
 };
 
 const REALM = 'Investment Balance';
