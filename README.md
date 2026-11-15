@@ -4,7 +4,7 @@
 
 O aplicativo traz cotações reais de Ações Brasileiras, Fundos Imobiliários (FIIs) e Criptomoedas. Ações Americanas estão disponíveis apenas como demonstração (AAPL, TSLA, NVDA).
 
-🔗 **Acesse:** [investment-balance.vercel.app](https://investment-balance.vercel.app/)
+🔗 **Acesse:** [investment-balance.vercel.app/app/](https://investment-balance.vercel.app/app/)
 
 <p align="center">
   <img src="docs/home.png" alt="Tela inicial do Investment Balance" width="100%" />
@@ -95,11 +95,34 @@ A única variável é opcional: sem ela, ações BR e FIIs usam os dados de demo
 |---|---|---|
 | `BRAPI_TOKEN` | Vercel → *Settings → Environment Variables* (só no servidor) | Token da [BRAPI](https://brapi.dev). **Não** use o prefixo `VITE_`, senão ele vai parar no bundle público. |
 
+### Proteção opcional por senha
+
+O arquivo [`middleware.ts`](middleware.ts) permite colocar **o app** (`/app/*`, incluindo JS/CSS) e a API (`/api/*`) atrás de usuário e senha (HTTP Basic Auth). A landing page na raiz (`/`) continua pública, sem banco e sem serviço externo. Ele fica **desligado por padrão** e só é ativado quando as **duas** variáveis abaixo existem na Vercel:
+
+| Variável | Descrição |
+|---|---|
+| `BASIC_AUTH_USER` | Usuário exigido no login |
+| `BASIC_AUTH_PASSWORD` | Senha exigida no login |
+
+Para desligar, remova as variáveis e faça um novo deploy. O arquivo não depende de nada do projeto, então pode ser copiado para qualquer outro app na Vercel.
+
+### Estrutura do deploy
+
+Um único projeto na Vercel serve tudo:
+
+| Caminho | Conteúdo | Origem |
+|---|---|---|
+| `/` | Landing page (pública) | arquivos estáticos de `landing/`, copiados por `scripts/build-landing.mjs` |
+| `/app/` | O app (React) | build do Vite (`base: '/app/'`, saída em `dist/app/`) |
+| `/api/*` | Funções serverless | pasta `api/` |
+
+O app usa rotas com `#` (ex.: `/app/#/simulate/PETR4`). Links antigos sem `/app/` são redirecionados pela landing.
+
 ### Rodando localmente
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000 — frontend apenas (BRAPI usa dados de demonstração)
+npm run dev        # http://localhost:3000/app/ — frontend apenas (BRAPI usa dados de demonstração)
 ```
 
 Para testar o proxy da BRAPI localmente, use a [Vercel CLI](https://vercel.com/docs/cli), que executa as funções da pasta `api/`:
@@ -111,6 +134,23 @@ vercel dev
 ```
 
 > Arquivos `.env*.local` já estão no `.gitignore`. Nunca commite tokens.
+
+## 🪧 Landing page
+
+A pasta [`landing/`](landing/) contém a landing page de apresentação do projeto: HTML + CSS estáticos, sem framework e sem dependências npm, mais um pequeno script externo. Ela não depende de nada fora da própria pasta, e os arquivos de apoio (CSS, capturas de tela, favicon, script) ficam em `landing/static/`, servidos em `/static/` para não colidir com o `/assets/` gerado pelo Vite.
+
+Landing e app são publicados pelo **mesmo projeto da Vercel**:
+
+| Caminho | Conteúdo |
+|---|---|
+| `/` | Landing page (conteúdo de `landing/`, copiado para a raiz do build) |
+| `/app/` | O app React (simulador e calculadora Bazin) |
+
+O `landing/static/legacy-redirect.js` mantém funcionando links antigos no formato `/#/simulate/PETR4`: quando o hash começa com `#/`, ele redireciona para `/app/` com o mesmo hash.
+
+Os headers de segurança vêm do `vercel.json` da raiz, que vale para o site inteiro. A landing usa só scripts, estilos e imagens do próprio domínio, mais o Google Fonts, então a mesma CSP do app a cobre. Se a landing passar a carregar algo externo, inclua o domínio lá.
+
+Para ver só a landing localmente, sirva a pasta com qualquer servidor estático, por exemplo `npx serve landing` (o link "Abrir o app" aponta para `/app/`, que só existe no build completo).
 
 ## 📄 Licença
 

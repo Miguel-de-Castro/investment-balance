@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Investment Balance | Simulador de preço médio e preço teto</title>
+  <meta name="description" content="Simule um aporte e veja seu novo preço médio. Calcule o preço teto pelo Método Bazin com histórico real de dividendos. Ações, FIIs e cripto.">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#060b16" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f7fb" media="(prefers-color-scheme: light)">
+  <script src="/static/legacy-redirect.js"></script>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Investment Balance">
+  <meta property="og:title" content="Investment Balance | Preço médio e preço teto com cotações reais">
+  <meta property="og:description" content="Simulador de preço médio e calculadora de preço teto (Método Bazin) para ações, FIIs e criptomoedas.">
+  <meta property="og:image" content="/static/home.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="Tela inicial do Investment Balance com a busca de ativos">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Investment Balance | Preço médio e preço teto com cotações reais">
+  <meta name="twitter:description" content="Simulador de preço médio e calculadora de preço teto (Método Bazin) para ações, FIIs e criptomoedas.">
+  <meta name="twitter:image" content="/static/home.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="preload" as="image" href="/static/simulator.png">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#topo" aria-label="Investment Balance, início da página">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>
+        </span>
+        <span class="brand-name">Investment <span>Balance</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Seções">
+        <a href="#ferramentas">Ferramentas</a>
+        <a href="#dados">Dados</a>
+        <a href="#engenharia">Engenharia</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="/app/">
+        Abrir o app
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <!-- Hero -->
+    <section class="hero" id="topo" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Projeto de portfólio</p>
+          <h1 id="hero-title">Simule antes de comprar.</h1>
+          <p class="lede">Veja como uma nova compra muda seu preço médio e calcule o preço teto pelo Método Bazin, com cotações reais.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="/app/">
+              Abrir o app
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/Miguel-de-Castro/investment-balance">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+              Ver código no GitHub
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <figure class="shot shot-main">
+            <img src="/static/simulator.png" width="1280" height="1010" alt="Tela do simulador do Investment Balance com PETR4: 200 ações a R$ 38,50, compra de mais 100 a R$ 45,30 e novo preço médio de R$ 40,77.">
+          </figure>
+          <figure class="shot shot-float">
+            <img src="/static/bazin-card.png" width="423" height="281" alt="Resultado da calculadora Bazin: preço teto de R$ 211,70, cotação atual de R$ 45,30, abaixo do preço teto.">
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preço médio -->
+    <section class="section" id="ferramentas" aria-labelledby="pm-title">
+      <div class="container pm-grid">
+        <figure class="shot pm-shot reveal">
+          <img src="/static/sim-tool.png" width="868" height="489" loading="lazy" alt="Formulário de simulação de aporte e cartões de resultado: valor do aporte R$ 4.530,00, total investido R$ 12.230,00 e nova quantidade de 300 ações.">
+        </figure>
+        <div class="pm-copy reveal">
+          <h2 id="pm-title">Quanto a próxima compra muda o seu preço médio?</h2>
+          <p>Informe quantas ações você tem e a que preço. O app busca a cotação atual e calcula o efeito da nova compra.</p>
+          <dl class="receipt" aria-label="Exemplo de cálculo com PETR4">
+            <div><dt>Em carteira</dt><dd>200 × R$ 38,50</dd></div>
+            <div><dt>Nova compra</dt><dd>100 × R$ 45,30</dd></div>
+            <div class="receipt-total"><dt>Novo preço médio</dt><dd>R$ 40,77 <span>+5,89%</span></dd></div>
+          </dl>
+          <p class="fine">Exemplo com PETR4, os mesmos valores da captura de tela.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bazin -->
+    <section class="section section-bazin" aria-labelledby="bazin-title">
+      <div class="container">
+        <h2 id="bazin-title" class="reveal">Preço teto pelo Método Bazin</h2>
+        <p class="formula reveal" aria-label="Preço teto é igual aos dividendos anuais divididos pelo rendimento mínimo desejado">
+          <span class="f-term">Preço teto</span>
+          <span class="f-op" aria-hidden="true">=</span>
+          <span class="f-frac">
+            <span class="f-num">dividendos anuais</span>
+            <span class="f-den">rendimento mínimo</span>
+          </span>
+        </p>
+        <p class="formula-example reveal">R$ 12,70 ÷ 6% = <strong>R$ 211,70</strong></p>
+
+        <div class="bazin-body">
+          <figure class="shot bazin-shot reveal">
+            <img src="/static/bazin-tool.png" width="868" height="601" loading="lazy" alt="Calculadora Bazin com aviso de que não é recomendação, explicação da fórmula, parâmetros com média de 5 anos e resultado: preço teto de R$ 211,70.">
+          </figure>
+          <ul class="bazin-facts reveal">
+            <li><strong>Médias de 1, 5 e 10 anos.</strong> O dividend yield vem do histórico real da Brapi, não de um número fixo.</li>
+            <li><strong>Rendimento mínimo ajustável.</strong> O padrão é 6%, como no método original.</li>
+            <li><strong>Abaixo ou acima do teto.</strong> O resultado mostra a margem em relação à cotação atual.</li>
+          </ul>
+        </div>
+        <p class="note reveal">A calculadora aplica uma fórmula sobre dividendos passados. Não é recomendação de compra ou venda, e o app avisa isso na própria tela.</p>
+      </div>
+    </section>
+
+    <!-- Dados -->
+    <section class="section" id="dados" aria-labelledby="dados-title">
+      <div class="container">
+        <h2 id="dados-title" class="reveal">De onde vêm as cotações</h2>
+        <p class="section-lede reveal">Quando uma fonte não responde, o app usa dados de demonstração e avisa na tela. Ele nunca inventa um preço.</p>
+        <table class="sources reveal">
+          <caption class="visually-hidden">Fontes de dados por tipo de ativo</caption>
+          <thead>
+            <tr><th scope="col">Ativos</th><th scope="col">Fonte</th><th scope="col">Dados</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Ações BR e FIIs</th><td>Brapi, por um proxy no servidor</td><td><span class="tag tag-real">Reais</span></td></tr>
+            <tr><th scope="row">Criptomoedas</th><td>CoinGecko, direto do navegador</td><td><span class="tag tag-real">Reais</span></td></tr>
+            <tr><th scope="row">Ações EUA</th><td>AAPL, TSLA e NVDA, sem fonte real</td><td><span class="tag">Demonstração</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Engenharia -->
+    <section class="section" id="engenharia" aria-labelledby="eng-title">
+      <div class="container">
+        <p class="eyebrow reveal">Decisões técnicas</p>
+        <h2 id="eng-title" class="reveal">O que acontece por trás da tela</h2>
+        <div class="bento">
+          <article class="cell cell-proxy reveal">
+            <h3>O token da Brapi nunca chega ao navegador</h3>
+            <p>O frontend chama <code>/api/brapi</code>. Uma função serverless na Vercel valida a requisição contra uma allowlist e só então repassa para a Brapi com o token do servidor. Qualquer outra coisa recebe 400.</p>
+            <pre class="code" tabindex="0" aria-label="Trecho de api/brapi.ts"><code><span class="c">// api/brapi.ts</span>
+<span class="k">const</span> TICKER_REGEX = <span class="s">/^[A-Z]{4}(3|4|5|6|11|33|34)$/</span>;
+<span class="k">const</span> SEARCH_REGEX = <span class="s">/^[A-Z0-9]{3,12}$/</span>;
+<span class="k">const</span> MAX_SEARCH_LIMIT = <span class="n">5</span>;</code></pre>
+          </article>
+          <article class="cell cell-cache reveal">
+            <p class="big-num">5 min <span>/</span> 1 h</p>
+            <h3>Cache na CDN</h3>
+            <p>Cotações ficam em cache por 5 minutos e buscas por 1 hora. Consultas repetidas não gastam a cota da API. Erros 429 e 5xx nunca entram no cache.</p>
+          </article>
+          <article class="cell cell-search reveal">
+            <p class="big-num">300 ms</p>
+            <h3>Busca com debounce</h3>
+            <p>O autocomplete espera você parar de digitar e cancela a requisição anterior com <code>AbortController</code>.</p>
+          </article>
+          <article class="cell cell-audit reveal">
+            <p class="big-num">0</p>
+            <h3>Vulnerabilidades no npm audit</h3>
+            <p>Dependências enxutas e atualizadas.</p>
+          </article>
+          <article class="cell cell-csp reveal">
+            <h3>CSP restrita e headers de segurança</h3>
+            <p>Scripts só do próprio domínio, conexões só com <code>/api</code> e CoinGecko. Também <code>X-Frame-Options: DENY</code>, <code>nosniff</code>, Referrer-Policy e Permissions-Policy.</p>
+          </article>
+          <article class="cell cell-honest reveal">
+            <h3>Dados honestos</h3>
+            <p>Dado de demonstração aparece sempre sinalizado. Ticker sem fonte real e sem demonstração gera erro, nunca um preço aleatório.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA final -->
+    <section class="section section-cta" aria-labelledby="cta-title">
+      <div class="container cta-block reveal">
+        <div>
+          <h2 id="cta-title">Teste com um ticker de verdade</h2>
+          <p>Digite PETR4, MXRF11 ou BTC na busca. Tema claro e escuro incluídos.</p>
+          <ul class="stack" aria-label="Tecnologias usadas">
+            <li>React 19</li>
+            <li>TypeScript</li>
+            <li>Vite</li>
+            <li>Tailwind CSS</li>
+            <li>React Router</li>
+            <li>Vercel Functions</li>
+          </ul>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="/app/">
+            Abrir o app
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/Miguel-de-Castro/investment-balance">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            Ver código no GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="disclaimer"><strong>Ferramenta educacional.</strong> Não é recomendação de investimento. Cotações podem ter atraso ou conter erros.</p>
+      <p class="footer-meta">Código aberto sob licença MIT. Dados de <a href="https://brapi.dev">Brapi</a> e <a href="https://www.coingecko.com">CoinGecko</a>.</p>
+    </div>
+  </footer>
+</body>
+</html>

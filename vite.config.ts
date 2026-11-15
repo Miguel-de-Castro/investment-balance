@@ -4,6 +4,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(() => {
     return {
+      // O app é servido em /app/ (a raiz do site é a landing page, ver scripts/build-landing.mjs)
+      base: '/app/',
+      build: {
+        outDir: 'dist/app',
+        emptyOutDir: true,
+      },
       server: {
         port: 3000,
       },
