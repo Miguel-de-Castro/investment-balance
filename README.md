@@ -135,6 +135,23 @@ vercel dev
 
 > Arquivos `.env*.local` já estão no `.gitignore`. Nunca commite tokens.
 
+## 🪧 Landing page
+
+A pasta [`landing/`](landing/) contém uma landing page estática de apresentação do projeto (HTML + CSS puros, sem build, sem dependências npm e sem JavaScript). Ela é independente do app: não usa nada de fora da própria pasta, e as capturas de tela ficam em `landing/assets/`.
+
+Para publicar na Vercel como um **segundo projeto**, importe este mesmo repositório e configure:
+
+| Configuração | Valor |
+|---|---|
+| Root Directory | `landing` |
+| Framework Preset | Other |
+| Build Command | vazio (sem build) |
+| Output Directory | vazio (padrão: a própria pasta) |
+
+Os headers de segurança (CSP restrita, `X-Frame-Options`, `nosniff` etc.) da landing ficam em `landing/vercel.json`. O `vercel.json` da raiz e a função `api/` pertencem apenas ao app e **não** fazem parte da landing.
+
+Para ver localmente, sirva a pasta com qualquer servidor estático, por exemplo `npx serve landing`.
+
 ## 📄 Licença
 
 Distribuído sob a licença [MIT](LICENSE).
