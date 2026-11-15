@@ -95,6 +95,17 @@ A única variável é opcional: sem ela, ações BR e FIIs usam os dados de demo
 |---|---|---|
 | `BRAPI_TOKEN` | Vercel → *Settings → Environment Variables* (só no servidor) | Token da [BRAPI](https://brapi.dev). **Não** use o prefixo `VITE_`, senão ele vai parar no bundle público. |
 
+### Proteção opcional por senha
+
+O arquivo [`middleware.ts`](middleware.ts) permite colocar **todo o app** (páginas, JS/CSS e `/api`) atrás de usuário e senha (HTTP Basic Auth), sem banco e sem serviço externo. Ele fica **desligado por padrão** e só é ativado quando as **duas** variáveis abaixo existem na Vercel:
+
+| Variável | Descrição |
+|---|---|
+| `BASIC_AUTH_USER` | Usuário exigido no login |
+| `BASIC_AUTH_PASSWORD` | Senha exigida no login |
+
+Para desligar, remova as variáveis e faça um novo deploy. O arquivo não depende de nada do projeto, então pode ser copiado para qualquer outro app na Vercel.
+
 ### Rodando localmente
 
 ```bash
