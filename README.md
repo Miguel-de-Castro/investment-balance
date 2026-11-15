@@ -137,20 +137,20 @@ vercel dev
 
 ## 🪧 Landing page
 
-A pasta [`landing/`](landing/) contém uma landing page estática de apresentação do projeto (HTML + CSS puros, sem build, sem dependências npm e sem JavaScript). Ela é independente do app: não usa nada de fora da própria pasta, e as capturas de tela ficam em `landing/assets/`.
+A pasta [`landing/`](landing/) contém a landing page de apresentação do projeto: HTML + CSS estáticos, sem framework e sem dependências npm, mais um pequeno script externo. Ela não depende de nada fora da própria pasta, e os arquivos de apoio (CSS, capturas de tela, favicon, script) ficam em `landing/static/`, servidos em `/static/` para não colidir com o `/assets/` gerado pelo Vite.
 
-Para publicar na Vercel como um **segundo projeto**, importe este mesmo repositório e configure:
+Landing e app são publicados pelo **mesmo projeto da Vercel**:
 
-| Configuração | Valor |
+| Caminho | Conteúdo |
 |---|---|
-| Root Directory | `landing` |
-| Framework Preset | Other |
-| Build Command | vazio (sem build) |
-| Output Directory | vazio (padrão: a própria pasta) |
+| `/` | Landing page (conteúdo de `landing/`, copiado para a raiz do build) |
+| `/app/` | O app React (simulador e calculadora Bazin) |
 
-Os headers de segurança (CSP restrita, `X-Frame-Options`, `nosniff` etc.) da landing ficam em `landing/vercel.json`. O `vercel.json` da raiz e a função `api/` pertencem apenas ao app e **não** fazem parte da landing.
+O `landing/static/legacy-redirect.js` mantém funcionando links antigos no formato `/#/simulate/PETR4`: quando o hash começa com `#/`, ele redireciona para `/app/` com o mesmo hash.
 
-Para ver localmente, sirva a pasta com qualquer servidor estático, por exemplo `npx serve landing`.
+A CSP de que a landing precisa está em `landing/vercel.json` (só scripts e estilos do próprio domínio, Google Fonts e imagens locais) e deve ser mantida compatível com a do `vercel.json` da raiz.
+
+Para ver só a landing localmente, sirva a pasta com qualquer servidor estático, por exemplo `npx serve landing` (o link "Abrir o app" aponta para `/app/`, que só existe no build completo).
 
 ## 📄 Licença
 
