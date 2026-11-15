@@ -148,7 +148,7 @@ Landing e app são publicados pelo **mesmo projeto da Vercel**:
 
 O `landing/static/legacy-redirect.js` mantém funcionando links antigos no formato `/#/simulate/PETR4`: quando o hash começa com `#/`, ele redireciona para `/app/` com o mesmo hash.
 
-A CSP de que a landing precisa está em `landing/vercel.json` (só scripts e estilos do próprio domínio, Google Fonts e imagens locais) e deve ser mantida compatível com a do `vercel.json` da raiz.
+Os headers de segurança vêm do `vercel.json` da raiz, que vale para o site inteiro. A landing usa só scripts, estilos e imagens do próprio domínio, mais o Google Fonts, então a mesma CSP do app a cobre. Se a landing passar a carregar algo externo, inclua o domínio lá.
 
 Para ver só a landing localmente, sirva a pasta com qualquer servidor estático, por exemplo `npx serve landing` (o link "Abrir o app" aponta para `/app/`, que só existe no build completo).
 
